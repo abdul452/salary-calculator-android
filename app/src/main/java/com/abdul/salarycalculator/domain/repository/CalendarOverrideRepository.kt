@@ -1,4 +1,4 @@
-package com.abdul.salarycalculator.data.repository
+package com.abdul.salarycalculator.domain.repository
 
 import com.abdul.salarycalculator.domain.model.CalendarOverride
 import kotlinx.coroutines.flow.Flow

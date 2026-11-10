@@ -4,6 +4,7 @@ import com.abdul.salarycalculator.data.local.dao.AttendanceRecordDao
 import com.abdul.salarycalculator.data.mapper.toDomain
 import com.abdul.salarycalculator.data.mapper.toEntity
 import com.abdul.salarycalculator.domain.model.AttendanceRecord
+import com.abdul.salarycalculator.domain.repository.AttendanceRecordRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate

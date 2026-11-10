@@ -4,6 +4,7 @@ import com.abdul.salarycalculator.data.local.dao.AdditionalIncomeRecordDao
 import com.abdul.salarycalculator.data.mapper.toDomain
 import com.abdul.salarycalculator.data.mapper.toEntity
 import com.abdul.salarycalculator.domain.model.AdditionalIncomeRecord
+import com.abdul.salarycalculator.domain.repository.AdditionalIncomeRecordRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

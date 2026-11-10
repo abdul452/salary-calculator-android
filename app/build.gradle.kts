@@ -72,6 +72,8 @@ dependencies {
 
     // Unit Testing
     testImplementation(libs.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 
     // Android Testing
     androidTestImplementation(libs.androidx.junit)
@@ -96,5 +98,4 @@ dependencies {
 
     androidTestImplementation(libs.core.ktx)
     androidTestImplementation(libs.androidx.runner)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
