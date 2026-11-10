@@ -8,7 +8,7 @@ data class SalaryVersion(
     val employeeId: Long,
     val effectiveMonth: YearMonth,
     val basicSalary: Rupiah,
-    val allowance: Rupiah,
+    val fixedAllowance: Rupiah,
     val mealAllowance: Rupiah,
     val punctualityAllowance: Rupiah,
     val jhtRate: PercentageRate,
