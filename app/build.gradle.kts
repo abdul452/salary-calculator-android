@@ -93,4 +93,8 @@ dependencies {
 
     // Room Testing
     testImplementation(libs.androidx.room.testing)
+
+    androidTestImplementation(libs.core.ktx)
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
