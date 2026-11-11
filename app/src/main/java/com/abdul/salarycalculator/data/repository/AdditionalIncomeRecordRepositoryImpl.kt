@@ -60,4 +60,12 @@ class AdditionalIncomeRecordRepositoryImpl @Inject constructor(
             payrollPeriodId = payrollPeriodId
         ).map { it.toDomain() }
     }
+
+    override suspend fun hasRecordsForPayrollPeriod(
+        payrollPeriodId: Long
+    ): Boolean {
+        return additionalIncomeRecordDao.hasRecordsForPayrollPeriod(
+            payrollPeriodId = payrollPeriodId
+        )
+    }
 }

@@ -15,11 +15,18 @@ class UpdateEmployeeUseCase @Inject constructor(
         name: String,
         relationship: String?
     ) {
-        requireNotNull(employee.id) {
+        val employeeId = requireNotNull(employee.id) {
             "Employee ID cannot be null"
         }
 
-        val updatedEmployee = employee.copy(
+        require(name.isNotBlank()) {
+            "Employee name cannot be blank"
+        }
+
+        val existingEmployee = employeeRepository.getById(employeeId)
+            ?: throw IllegalArgumentException("Employee not found")
+
+        val updatedEmployee = existingEmployee.copy(
             name = name.trim(),
             relationship = relationship
                 ?.trim()

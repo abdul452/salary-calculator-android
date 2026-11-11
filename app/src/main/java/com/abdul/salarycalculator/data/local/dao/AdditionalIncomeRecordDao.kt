@@ -64,4 +64,17 @@ interface AdditionalIncomeRecordDao {
         "DELETE FROM additional_income_records WHERE id = :id"
     )
     suspend fun deleteById(id: Long)
+
+    @Query(
+        """
+    SELECT EXISTS(
+        SELECT 1
+        FROM additional_income_records
+        WHERE payrollPeriodId = :payrollPeriodId
+    )
+    """
+    )
+    suspend fun hasRecordsForPayrollPeriod(
+        payrollPeriodId: Long
+    ): Boolean
 }

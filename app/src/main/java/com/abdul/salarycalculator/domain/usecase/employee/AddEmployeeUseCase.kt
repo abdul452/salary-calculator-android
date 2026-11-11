@@ -14,12 +14,18 @@ class AddEmployeeUseCase @Inject constructor(
         name: String,
         relationship: String? = null
     ): Long {
+        require(name.isNotBlank()) {
+            "Employee name cannot be blank"
+        }
+
         val now = Instant.now(clock)
 
         val employee = Employee(
             id = null,
             name = name.trim(),
-            relationship = relationship?.trim()?.takeIf { it.isNotEmpty() },
+            relationship = relationship
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() },
             isActive = true,
             createdAt = now,
             updatedAt = now

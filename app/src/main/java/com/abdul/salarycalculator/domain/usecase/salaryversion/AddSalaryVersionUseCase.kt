@@ -1,8 +1,10 @@
+
 package com.abdul.salarycalculator.domain.usecase.salaryversion
 
 import com.abdul.salarycalculator.domain.model.PercentageRate
 import com.abdul.salarycalculator.domain.model.Rupiah
 import com.abdul.salarycalculator.domain.model.SalaryVersion
+import com.abdul.salarycalculator.domain.repository.EmployeeRepository
 import com.abdul.salarycalculator.domain.repository.SalaryVersionRepository
 import java.time.Clock
 import java.time.Instant
@@ -10,10 +12,10 @@ import java.time.YearMonth
 import javax.inject.Inject
 
 class AddSalaryVersionUseCase @Inject constructor(
+    private val employeeRepository: EmployeeRepository,
     private val salaryVersionRepository: SalaryVersionRepository,
     private val clock: Clock
 ) {
-
     suspend operator fun invoke(
         employeeId: Long,
         effectiveMonth: YearMonth,
@@ -24,12 +26,13 @@ class AddSalaryVersionUseCase @Inject constructor(
         jhtRate: PercentageRate? = null,
         jpRate: PercentageRate? = null
     ): Long {
-
         require(employeeId > 0) {
             "Employee ID must be greater than zero"
         }
 
-        // Check duplicate effective month
+        employeeRepository.getById(employeeId)
+            ?: throw IllegalArgumentException("Employee not found")
+
         val existingVersion =
             salaryVersionRepository.getByEffectiveMonth(
                 employeeId = employeeId,
@@ -40,22 +43,19 @@ class AddSalaryVersionUseCase @Inject constructor(
             "Salary version already exists for this month"
         }
 
-        // Get previous salary version
-        val previousVersion =
-            salaryVersionRepository.getEffectiveSalaryVersion(
-                employeeId = employeeId,
-                payrollMonth = effectiveMonth.minusMonths(1)
-            )
+        val previous = salaryVersionRepository.getEffectiveSalaryVersion(
+            employeeId = employeeId,
+            payrollMonth = effectiveMonth.minusMonths(1)
+        )
 
-        // First version must provide all components
-        if (previousVersion == null) {
+        if (previous == null) {
             require(
                 basicSalary != null &&
-                fixedAllowance != null &&
-                mealAllowance != null &&
-                punctualityAllowance != null &&
-                jhtRate != null &&
-                jpRate != null
+                        fixedAllowance != null &&
+                        mealAllowance != null &&
+                        punctualityAllowance != null &&
+                        jhtRate != null &&
+                        jpRate != null
             ) {
                 "All salary components and BPJS rates are required for the first salary version"
             }
@@ -67,25 +67,13 @@ class AddSalaryVersionUseCase @Inject constructor(
             id = null,
             employeeId = employeeId,
             effectiveMonth = effectiveMonth,
-
-            basicSalary = basicSalary
-                ?: requireNotNull(previousVersion).basicSalary,
-
-            fixedAllowance = fixedAllowance
-                ?: requireNotNull(previousVersion).fixedAllowance,
-
-            mealAllowance = mealAllowance
-                ?: requireNotNull(previousVersion).mealAllowance,
-
+            basicSalary = basicSalary ?: requireNotNull(previous).basicSalary,
+            fixedAllowance = fixedAllowance ?: requireNotNull(previous).fixedAllowance,
+            mealAllowance = mealAllowance ?: requireNotNull(previous).mealAllowance,
             punctualityAllowance = punctualityAllowance
-                ?: requireNotNull(previousVersion).punctualityAllowance,
-
-            jhtRate = jhtRate
-                ?: requireNotNull(previousVersion).jhtRate,
-
-            jpRate = jpRate
-                ?: requireNotNull(previousVersion).jpRate,
-
+                ?: requireNotNull(previous).punctualityAllowance,
+            jhtRate = jhtRate ?: requireNotNull(previous).jhtRate,
+            jpRate = jpRate ?: requireNotNull(previous).jpRate,
             createdAt = now,
             updatedAt = now
         )

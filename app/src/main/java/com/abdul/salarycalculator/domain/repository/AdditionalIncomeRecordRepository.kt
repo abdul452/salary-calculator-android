@@ -22,4 +22,8 @@ interface AdditionalIncomeRecordRepository {
         employeeId: Long,
         payrollPeriodId: Long
     ): List<AdditionalIncomeRecord>
+
+    suspend fun hasRecordsForPayrollPeriod(
+        payrollPeriodId: Long
+    ): Boolean
 }

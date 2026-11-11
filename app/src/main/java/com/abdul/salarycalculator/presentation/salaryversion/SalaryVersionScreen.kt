@@ -1,0 +1,205 @@
+
+package com.abdul.salarycalculator.presentation.salaryversion
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import java.text.NumberFormat
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SalaryVersionScreen(
+    uiState: SalaryVersionUiState,
+    onAddSalaryVersion: () -> Unit,
+    onBack: () -> Unit,
+    onRetry: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Riwayat Gaji")
+                },
+                navigationIcon = {
+                    TextButton(onClick = onBack) {
+                        Text("Kembali")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            Button(onClick = onAddSalaryVersion) {
+                Text("+ Tambah Versi Gaji")
+            }
+        }
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = uiState.employeeName,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                uiState.errorMessage != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.errorMessage,
+                            color = MaterialTheme.colorScheme.error
+                        )
+
+                        Button(onClick = onRetry) {
+                            Text("Coba Lagi")
+                        }
+                    }
+                }
+
+                uiState.salaryVersions.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Belum ada riwayat gaji")
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(
+                            items = uiState.salaryVersions,
+                            key = { it.id }
+                        ) { version ->
+                            SalaryVersionItem(version)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SalaryVersionItem(
+    version: SalaryVersionItemUiModel
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Berlaku mulai ${version.effectiveMonth}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            SalaryRow("Basic Salary", version.basicSalary)
+            SalaryRow("Fixed Allowance", version.fixedAllowance)
+            SalaryRow("Meal Allowance / Hari", version.mealAllowance)
+            SalaryRow("Punctuality / Hari", version.punctualityAllowance)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("JHT")
+                Text(formatRate(version.jhtRate))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("JP")
+                Text(formatRate(version.jpRate))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SalaryRow(
+    label: String,
+    amount: Long
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Text(
+            text = formatRupiah(amount),
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+private fun formatRupiah(amount: Long): String {
+    return NumberFormat.getCurrencyInstance(
+        Locale("id", "ID")
+    ).format(amount)
+}
+
+private fun formatRate(basisPoints: Int): String {
+    return "${basisPoints / 100}.${(basisPoints % 100).toString().padStart(2, '0')}%"
+}
