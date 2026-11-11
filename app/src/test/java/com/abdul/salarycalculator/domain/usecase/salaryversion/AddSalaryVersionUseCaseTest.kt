@@ -1,8 +1,10 @@
 package com.abdul.salarycalculator.domain.usecase.salaryversion
 
+import com.abdul.salarycalculator.domain.model.Employee
 import com.abdul.salarycalculator.domain.model.PercentageRate
 import com.abdul.salarycalculator.domain.model.Rupiah
 import com.abdul.salarycalculator.domain.model.SalaryVersion
+import com.abdul.salarycalculator.domain.repository.EmployeeRepository
 import com.abdul.salarycalculator.domain.repository.SalaryVersionRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,12 +24,20 @@ class AddSalaryVersionUseCaseTest {
 
     private lateinit var repository: SalaryVersionRepository
     private lateinit var useCase: AddSalaryVersionUseCase
+    private lateinit var employeeRepository: EmployeeRepository
 
     private val fixedInstant =
         Instant.parse("2026-11-10T08:00:00Z")
 
     private val fixedClock =
         Clock.fixed(fixedInstant, ZoneOffset.UTC)
+
+    private val employee = Employee(
+        id = 1L,
+        name = "Test Employee",
+        createdAt = fixedInstant,
+        updatedAt = fixedInstant
+    )
 
     private val previousVersion = SalaryVersion(
         id = 1L,
@@ -45,8 +55,18 @@ class AddSalaryVersionUseCaseTest {
 
     @Before
     fun setup() {
+        employeeRepository = mockk()
         repository = mockk()
-        useCase = AddSalaryVersionUseCase(repository, fixedClock)
+
+        coEvery {
+            employeeRepository.getById(1L)
+        } returns employee
+
+        useCase = AddSalaryVersionUseCase(
+            employeeRepository = employeeRepository,
+            salaryVersionRepository = repository,
+            clock = fixedClock
+        )
     }
 
     @Test
@@ -219,6 +239,28 @@ class AddSalaryVersionUseCaseTest {
                 employeeId = 0L,
                 effectiveMonth = YearMonth.of(2026, 1)
             )
+        }
+    }
+
+    @Test
+    fun `invoke throws exception when employee not found`() = runBlocking {
+        coEvery {
+            employeeRepository.getById(1L)
+        } returns null
+
+        try {
+            useCase(
+                employeeId = 1L,
+                effectiveMonth = YearMonth.of(2026, 1)
+            )
+
+            throw AssertionError("Expected IllegalArgumentException")
+        } catch (exception: IllegalArgumentException) {
+            assertEquals("Employee not found", exception.message)
+        }
+
+        coVerify(exactly = 0) {
+            repository.insert(any())
         }
     }
 }

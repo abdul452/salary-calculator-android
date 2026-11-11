@@ -1,6 +1,8 @@
+
 package com.abdul.salarycalculator.domain.usecase.payrollperiod
 
 import com.abdul.salarycalculator.domain.model.PayrollPeriod
+import com.abdul.salarycalculator.domain.repository.AdditionalIncomeRecordRepository
 import com.abdul.salarycalculator.domain.repository.PayrollPeriodRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -16,6 +18,7 @@ import java.time.YearMonth
 class DeletePayrollPeriodUseCaseTest {
 
     private lateinit var repository: PayrollPeriodRepository
+    private lateinit var additionalIncomeRepository: AdditionalIncomeRecordRepository
     private lateinit var useCase: DeletePayrollPeriodUseCase
 
     private val payrollPeriod = PayrollPeriod(
@@ -31,7 +34,12 @@ class DeletePayrollPeriodUseCaseTest {
     @Before
     fun setup() {
         repository = mockk()
-        useCase = DeletePayrollPeriodUseCase(repository)
+        additionalIncomeRepository = mockk()
+
+        useCase = DeletePayrollPeriodUseCase(
+            payrollPeriodRepository = repository,
+            additionalIncomeRecordRepository = additionalIncomeRepository
+        )
     }
 
     @Test
@@ -41,6 +49,10 @@ class DeletePayrollPeriodUseCaseTest {
         } returns payrollPeriod
 
         coEvery {
+            additionalIncomeRepository.hasRecordsForPayrollPeriod(1L)
+        } returns false
+
+        coEvery {
             repository.deleteById(1L)
         } returns Unit
 
@@ -48,6 +60,10 @@ class DeletePayrollPeriodUseCaseTest {
 
         coVerify(exactly = 1) {
             repository.getById(1L)
+        }
+
+        coVerify(exactly = 1) {
+            additionalIncomeRepository.hasRecordsForPayrollPeriod(1L)
         }
 
         coVerify(exactly = 1) {
@@ -68,5 +84,31 @@ class DeletePayrollPeriodUseCaseTest {
             } returns null
 
             useCase(999L)
+        }
+
+    @Test
+    fun `invoke rejects deletion when additional income records exist`() =
+        runBlocking {
+            coEvery {
+                repository.getById(1L)
+            } returns payrollPeriod
+
+            coEvery {
+                additionalIncomeRepository.hasRecordsForPayrollPeriod(1L)
+            } returns true
+
+            try {
+                useCase(1L)
+                throw AssertionError("Expected IllegalArgumentException")
+            } catch (exception: IllegalArgumentException) {
+                assertEquals(
+                    "Cannot delete payroll period because additional income records exist",
+                    exception.message
+                )
+            }
+
+            coVerify(exactly = 0) {
+                repository.deleteById(1L)
+            }
         }
 }

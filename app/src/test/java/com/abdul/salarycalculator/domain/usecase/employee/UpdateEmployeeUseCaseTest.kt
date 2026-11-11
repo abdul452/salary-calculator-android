@@ -48,6 +48,10 @@ class UpdateEmployeeUseCaseTest {
         val employeeSlot = slot<Employee>()
 
         coEvery {
+            repository.getById(1L)
+        } returns existingEmployee
+
+        coEvery {
             repository.update(capture(employeeSlot))
         } returns Unit
 
@@ -65,6 +69,10 @@ class UpdateEmployeeUseCaseTest {
         assertEquals(true, result.isActive)
         assertEquals(createdAt, result.createdAt)
         assertEquals(updatedAt, result.updatedAt)
+
+        coVerify(exactly = 1) {
+            repository.getById(1L)
+        }
 
         coVerify(exactly = 1) {
             repository.update(any())

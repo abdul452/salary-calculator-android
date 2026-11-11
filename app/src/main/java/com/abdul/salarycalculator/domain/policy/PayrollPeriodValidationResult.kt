@@ -1,6 +1,7 @@
 package com.abdul.salarycalculator.domain.policy
 
 import com.abdul.salarycalculator.domain.model.PayrollPeriod
+import javax.inject.Inject
 
 sealed interface PayrollPeriodValidationResult {
     data object Valid : PayrollPeriodValidationResult
@@ -8,7 +9,7 @@ sealed interface PayrollPeriodValidationResult {
     data object Overlapping : PayrollPeriodValidationResult
 }
 
-class PayrollPeriodPolicy {
+class PayrollPeriodPolicy @Inject constructor() {
 
     fun validate(
         candidate: PayrollPeriod,
