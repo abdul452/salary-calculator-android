@@ -19,13 +19,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,18 +39,9 @@ fun AttendanceListScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Attendance",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Attendance",
+                onBack = onBack
             )
         },
         floatingActionButton = {
@@ -238,3 +230,99 @@ private fun AttendanceItem(
         }
     }
 }
+
+
+@Preview(showBackground = true, name = "Attendance List")
+@Composable
+private fun AttendanceListPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceListScreen(
+            uiState = AttendanceUiState(
+                employeeId = 1,
+                employeeName = "Abdul",
+                startDate = "2026-10-26",
+                endDate = "2026-11-25",
+                attendanceRecords = listOf(
+                    AttendanceItemUiModel(
+                        id = 1,
+                        attendanceDate = "Senin, 2 November 2026",
+                        attendanceDateRaw = "2026-11-02",
+                        attendanceType = "WFO",
+                        isLate = false,
+                        isEarlyLeave = false,
+                        note = null
+                    ),
+                    AttendanceItemUiModel(
+                        id = 2,
+                        attendanceDate = "Selasa, 3 November 2026",
+                        attendanceDateRaw = "2026-11-03",
+                        attendanceType = "WFO",
+                        isLate = true,
+                        isEarlyLeave = false,
+                        note = "Terlambat karena macet"
+                    ),
+                    AttendanceItemUiModel(
+                        id = 3,
+                        attendanceDate = "Rabu, 4 November 2026",
+                        attendanceDateRaw = "2026-11-04",
+                        attendanceType = "WFH",
+                        isLate = false,
+                        isEarlyLeave = false,
+                        note = null
+                    ),
+                    AttendanceItemUiModel(
+                        id = 4,
+                        attendanceDate = "Kamis, 5 November 2026",
+                        attendanceDateRaw = "2026-11-05",
+                        attendanceType = "WFO",
+                        isLate = false,
+                        isEarlyLeave = true,
+                        note = "Pulang lebih awal"
+                    )
+                ),
+                isLoading = false
+            ),
+            onAddAttendance = {},
+            onAttendanceClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Attendance Empty")
+@Composable
+private fun AttendanceEmptyPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceListScreen(
+            uiState = AttendanceUiState(
+                employeeId = 1,
+                employeeName = "Abdul",
+                startDate = "2026-10-26",
+                endDate = "2026-11-25",
+                isLoading = false
+            ),
+            onAddAttendance = {},
+            onAttendanceClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Attendance Loading")
+@Composable
+private fun AttendanceListLoadingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceListScreen(
+            uiState = AttendanceUiState(
+                isLoading = true
+            ),
+            onAddAttendance = {},
+            onAttendanceClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+

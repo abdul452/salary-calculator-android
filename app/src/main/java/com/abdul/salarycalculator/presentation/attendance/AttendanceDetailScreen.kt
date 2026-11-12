@@ -1,32 +1,34 @@
 
 package com.abdul.salarycalculator.presentation.attendance
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,16 +37,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
+
+private data class AttendanceDetailTypeOption(
+    val value: String,
+    val label: String
+)
 
 private val attendanceDetailTypes = listOf(
-    "WFO",
-    "WFH",
-    "SICK",
-    "PERMISSION",
-    "LEAVE",
-    "HOLIDAY",
-    "ABSENT"
+    AttendanceDetailTypeOption("WFO", "WFO - Work From Office"),
+    AttendanceDetailTypeOption("WFH", "WFH - Work From Home"),
+    AttendanceDetailTypeOption("SICK", "Sakit"),
+    AttendanceDetailTypeOption("PERMISSION", "Izin"),
+    AttendanceDetailTypeOption("LEAVE", "Cuti"),
+    AttendanceDetailTypeOption("HOLIDAY", "Libur"),
+    AttendanceDetailTypeOption("ABSENT", "Tidak Hadir")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,21 +77,9 @@ fun AttendanceDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Detail Attendance",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(
-                        onClick = onBack,
-                        enabled = !isBusy
-                    ) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Detail Attendance",
+                onBack = onBack
             )
         }
     ) { innerPadding ->
@@ -157,41 +155,35 @@ fun AttendanceDetailScreen(
                     }
 
                     // Jenis Kehadiran
-                    Text(
-                        text = "Jenis Kehadiran",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
+                    ExposedDropdownMenuBox(
+                        expanded = typeExpanded,
+                        onExpandedChange = {
+                            if (!isBusy) {
+                                typeExpanded = !typeExpanded
+                            }
+                        }
                     ) {
                         OutlinedTextField(
-                            value = uiState.attendanceType,
+                            value = attendanceDetailTypes.firstOrNull {
+                                it.value == uiState.attendanceType
+                            }?.label ?: uiState.attendanceType,
                             onValueChange = {},
                             readOnly = true,
-                            enabled = !isBusy,
                             label = {
-                                Text("Attendance Type")
+                                Text("Jenis Kehadiran")
                             },
                             trailingIcon = {
-                                TextButton(
-                                    onClick = {
-                                        typeExpanded = true
-                                    },
-                                    enabled = !isBusy
-                                ) {
-                                    Text("Pilih")
-                                }
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = typeExpanded
+                                )
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(enabled = !isBusy) {
-                                    typeExpanded = true
-                                }
+                                .menuAnchor(),
+                            enabled = !isBusy
                         )
 
-                        DropdownMenu(
+                        ExposedDropdownMenu(
                             expanded = typeExpanded,
                             onDismissRequest = {
                                 typeExpanded = false
@@ -200,10 +192,10 @@ fun AttendanceDetailScreen(
                             attendanceDetailTypes.forEach { type ->
                                 DropdownMenuItem(
                                     text = {
-                                        Text(type)
+                                        Text(type.label)
                                     },
                                     onClick = {
-                                        onAttendanceTypeChange(type)
+                                        onAttendanceTypeChange(type.value)
                                         typeExpanded = false
                                     }
                                 )
@@ -253,16 +245,46 @@ fun AttendanceDetailScreen(
                     }
 
                     // Catatan
-                    OutlinedTextField(
-                        value = uiState.note,
-                        onValueChange = onNoteChange,
-                        label = {
-                            Text("Catatan (opsional)")
-                        },
+                    Card(
                         modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        enabled = !isBusy
-                    )
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Catatan",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = "Keterangan tambahan kehadiran.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            OutlinedTextField(
+                                value = uiState.note,
+                                onValueChange = onNoteChange,
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text("Tambahkan catatan jika diperlukan")
+                                },
+                                minLines = 3,
+                                enabled = !isBusy
+                            )
+                        }
+                    }
+
 
                     // Error message
                     if (uiState.errorMessage != null) {
@@ -297,35 +319,44 @@ fun AttendanceDetailScreen(
                     }
 
                     // Hapus
-                    TextButton(
+                    OutlinedButton(
                         onClick = {
                             showDeleteConfirmation = true
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !isBusy && uiState.attendanceId != null
+                        enabled = !isBusy && uiState.attendanceId != null,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.error
+                        )
                     ) {
                         if (uiState.isDeleting) {
                             CircularProgressIndicator(
                                 modifier = Modifier.height(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "Hapus Attendance",
+                                strokeWidth = 2.dp,
                                 color = MaterialTheme.colorScheme.error
                             )
+                        } else {
+                            Text("Hapus Attendance")
                         }
                     }
+
                 }
             }
         }
     }
 
-    // Konfirmasi penghapusan
+
+// Konfirmasi penghapusan
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = {
-                showDeleteConfirmation = false
+                if (!isBusy) {
+                    showDeleteConfirmation = false
+                }
             },
             title = {
                 Text("Hapus Attendance?")
@@ -342,20 +373,109 @@ fun AttendanceDetailScreen(
                         showDeleteConfirmation = false
                         onDelete()
                     },
-                    enabled = !isBusy
+                    enabled = !isBusy,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
-                    Text("Hapus")
+                    if (uiState.isDeleting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.height(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    } else {
+                        Text("Hapus")
+                    }
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = {
                         showDeleteConfirmation = false
-                    }
+                    },
+                    enabled = !isBusy
                 ) {
                     Text("Batal")
                 }
             }
         )
     }
+
 }
+
+
+@Preview(showBackground = true, name = "Attendance Detail WFO")
+@Composable
+private fun AttendanceDetailWfoPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceDetailScreen(
+            uiState = AttendanceDetailUiState(
+                attendanceId = 1,
+                employeeId = 1,
+                employeeName = "Abdul",
+                attendanceDate = "12 November 2026",
+                attendanceType = "WFO",
+                isLate = true,
+                isEarlyLeave = false,
+                note = "Terlambat karena macet",
+                isLoading = false
+            ),
+            onAttendanceTypeChange = {},
+            onLateChange = {},
+            onEarlyLeaveChange = {},
+            onNoteChange = {},
+            onSave = {},
+            onDelete = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Attendance Detail WFH")
+@Composable
+private fun AttendanceDetailWfhPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceDetailScreen(
+            uiState = AttendanceDetailUiState(
+                attendanceId = 2,
+                employeeId = 1,
+                employeeName = "Abdul",
+                attendanceDate = "13 November 2026",
+                attendanceType = "WFH",
+                note = "Bekerja dari rumah",
+                isLoading = false
+            ),
+            onAttendanceTypeChange = {},
+            onLateChange = {},
+            onEarlyLeaveChange = {},
+            onNoteChange = {},
+            onSave = {},
+            onDelete = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Attendance Detail Loading")
+@Composable
+private fun AttendanceDetailLoadingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceDetailScreen(
+            uiState = AttendanceDetailUiState(
+                isLoading = true
+            ),
+            onAttendanceTypeChange = {},
+            onLateChange = {},
+            onEarlyLeaveChange = {},
+            onNoteChange = {},
+            onSave = {},
+            onDelete = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+

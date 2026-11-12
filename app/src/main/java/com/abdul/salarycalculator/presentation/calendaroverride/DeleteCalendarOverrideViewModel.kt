@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.abdul.salarycalculator.domain.usecase.calendaroverride.DeleteCalendarOverrideUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
+import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,9 +34,8 @@ class DeleteCalendarOverrideViewModel @Inject constructor(
 
         val date = try {
             LocalDate.parse(dateString)
-        } catch (exception: Exception) {
+        } catch (exception: DateTimeParseException) {
             _uiState.value = _uiState.value.copy(
-                isDeleting = false,
                 errorMessage = "Tanggal calendar override tidak valid."
             )
             return
@@ -54,9 +54,9 @@ class DeleteCalendarOverrideViewModel @Inject constructor(
 
             } catch (exception: CancellationException) {
                 throw exception
+
             } catch (exception: Exception) {
                 _uiState.value = DeleteCalendarOverrideUiState(
-                    isDeleting = false,
                     errorMessage = exception.message
                         ?: "Gagal menghapus calendar override."
                 )
@@ -65,6 +65,8 @@ class DeleteCalendarOverrideViewModel @Inject constructor(
     }
 
     fun clearError() {
+        if (_uiState.value.isDeleting) return
+
         _uiState.value = _uiState.value.copy(
             errorMessage = null
         )

@@ -18,13 +18,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.presentation.components.MonthPickerField
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,20 +44,11 @@ fun AddSalaryVersionScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Tambah Salary Version",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Tambah Salary Version",
+                onBack = onBack
             )
-        }
+        },
     ) { innerPadding ->
 
         Column(
@@ -72,17 +65,11 @@ fun AddSalaryVersionScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            OutlinedTextField(
+            MonthPickerField(
                 value = uiState.effectiveMonth,
-                onValueChange = onEffectiveMonthChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Effective Month") },
-                placeholder = { Text("YYYY-MM, contoh 2027-01") },
-                singleLine = true,
-                enabled = !uiState.isSaving,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                )
+                onMonthSelected = onEffectiveMonthChange,
+                label = "Effective Month",
+                enabled = !uiState.isSaving
             )
 
             Text(
@@ -217,3 +204,32 @@ private fun PercentageInputField(
         )
     )
 }
+
+
+@Preview(showBackground = true, name = "Add Salary Version")
+@Composable
+private fun AddSalaryVersionScreenPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AddSalaryVersionScreen(
+            uiState = AddSalaryVersionUiState(
+                effectiveMonth = "2026-11",
+                basicSalary = "5000000",
+                fixedAllowance = "1000000",
+                mealAllowance = "25000",
+                punctualityAllowance = "15000",
+                jhtRate = "2",
+                jpRate = "1"
+            ),
+            onEffectiveMonthChange = {},
+            onBasicSalaryChange = {},
+            onFixedAllowanceChange = {},
+            onMealAllowanceChange = {},
+            onPunctualityAllowanceChange = {},
+            onJhtRateChange = {},
+            onJpRateChange = {},
+            onSave = {},
+            onBack = {}
+        )
+    }
+}
+

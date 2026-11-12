@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,13 +17,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.presentation.components.DatePickerField
+import com.abdul.salarycalculator.presentation.components.MonthPickerField
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,20 +40,11 @@ fun AddPayrollPeriodScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Tambah Payroll Period",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Tambah Payroll Period",
+                onBack = onBack
             )
-        }
+        },
     ) { innerPadding ->
 
         Column(
@@ -69,20 +61,11 @@ fun AddPayrollPeriodScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            OutlinedTextField(
+            MonthPickerField(
                 value = uiState.payrollMonth,
-                onValueChange = onPayrollMonthChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Payroll Month") },
-                placeholder = { Text("Contoh: 2027-02") },
-                supportingText = {
-                    Text("Format YYYY-MM")
-                },
-                singleLine = true,
-                enabled = !uiState.isSaving,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                )
+                onMonthSelected = onPayrollMonthChange,
+                label = "Payroll Month",
+                enabled = !uiState.isSaving
             )
 
             OutlinedTextField(
@@ -111,36 +94,18 @@ fun AddPayrollPeriodScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            OutlinedTextField(
+            DatePickerField(
                 value = uiState.startDate,
-                onValueChange = onStartDateChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Start Date") },
-                placeholder = { Text("Contoh: 2027-01-17") },
-                supportingText = {
-                    Text("Format YYYY-MM-DD")
-                },
-                singleLine = true,
-                enabled = !uiState.isSaving,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                )
+                onDateSelected = onStartDateChange,
+                label = "Start Date",
+                enabled = !uiState.isSaving
             )
 
-            OutlinedTextField(
+            DatePickerField(
                 value = uiState.endDate,
-                onValueChange = onEndDateChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("End Date") },
-                placeholder = { Text("Contoh: 2027-02-18") },
-                supportingText = {
-                    Text("Format YYYY-MM-DD")
-                },
-                singleLine = true,
-                enabled = !uiState.isSaving,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                )
+                onDateSelected = onEndDateChange,
+                label = "End Date",
+                enabled = !uiState.isSaving
             )
 
             uiState.errorMessage?.let { message ->
@@ -171,3 +136,48 @@ fun AddPayrollPeriodScreen(
         }
     }
 }
+
+
+@Preview(showBackground = true, name = "Add Payroll Period")
+@Composable
+private fun AddPayrollPeriodScreenPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AddPayrollPeriodScreen(
+            uiState = AddPayrollPeriodUiState(
+                payrollMonth = "2026-11",
+                payrollName = "Gaji November 2026",
+                startDate = "2026-10-26",
+                endDate = "2026-11-25"
+            ),
+            onPayrollMonthChange = {},
+            onPayrollNameChange = {},
+            onStartDateChange = {},
+            onEndDateChange = {},
+            onSave = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Add Payroll Period - Saving")
+@Composable
+private fun AddPayrollPeriodSavingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AddPayrollPeriodScreen(
+            uiState = AddPayrollPeriodUiState(
+                payrollMonth = "2026-11",
+                payrollName = "Gaji November 2026",
+                startDate = "2026-10-26",
+                endDate = "2026-11-25",
+                isSaving = true
+            ),
+            onPayrollMonthChange = {},
+            onPayrollNameChange = {},
+            onStartDateChange = {},
+            onEndDateChange = {},
+            onSave = {},
+            onBack = {}
+        )
+    }
+}
+

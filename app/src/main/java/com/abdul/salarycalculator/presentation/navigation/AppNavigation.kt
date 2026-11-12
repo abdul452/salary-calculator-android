@@ -1,6 +1,11 @@
 
 package com.abdul.salarycalculator.presentation.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -33,7 +38,7 @@ import com.abdul.salarycalculator.presentation.attendance.AttendanceListScreen
 import com.abdul.salarycalculator.presentation.attendance.AttendanceSelectionScreen
 import com.abdul.salarycalculator.presentation.attendance.AttendanceSelectionViewModel
 import com.abdul.salarycalculator.presentation.attendance.AttendanceViewModel
-import com.abdul.salarycalculator.presentation.calendaroverride.AddCalendarOverrideUiState
+import com.abdul.salarycalculator.presentation.calendaroverride.AddCalendarOverrideScreen
 import com.abdul.salarycalculator.presentation.calendaroverride.AddCalendarOverrideViewModel
 import com.abdul.salarycalculator.presentation.calendaroverride.CalendarOverrideViewModel
 import com.abdul.salarycalculator.presentation.calendaroverride.DeleteCalendarOverrideViewModel
@@ -46,6 +51,8 @@ import com.abdul.salarycalculator.presentation.employee.EmployeeDetailScreen
 import com.abdul.salarycalculator.presentation.employee.EmployeeDetailViewModel
 import com.abdul.salarycalculator.presentation.employee.EmployeeListScreen
 import com.abdul.salarycalculator.presentation.employee.EmployeeViewModel
+import com.abdul.salarycalculator.presentation.payroll.PayrollScreen
+import com.abdul.salarycalculator.presentation.payroll.PayrollViewModel
 import com.abdul.salarycalculator.presentation.payrollperiod.AddPayrollPeriodScreen
 import com.abdul.salarycalculator.presentation.payrollperiod.AddPayrollPeriodViewModel
 import com.abdul.salarycalculator.presentation.payrollperiod.DeletePayrollPeriodViewModel
@@ -67,14 +74,56 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Dashboard.route
+        startDestination = Screen.Dashboard.route,
+
+        // Saat membuka halaman baru
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { it / 4 },
+                animationSpec = tween(250)
+            ) + fadeIn(
+                animationSpec = tween(250)
+            )
+        },
+
+        // Saat meninggalkan halaman
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it / 4 },
+                animationSpec = tween(250)
+            ) + fadeOut(
+                animationSpec = tween(200)
+            )
+        },
+
+        // Saat kembali ke halaman sebelumnya
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it / 4 },
+                animationSpec = tween(250)
+            ) + fadeIn(
+                animationSpec = tween(250)
+            )
+        },
+
+        // Saat halaman sekarang ditutup dengan Back
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it / 4 },
+                animationSpec = tween(250)
+            ) + fadeOut(
+                animationSpec = tween(200)
+            )
+        }
     ) {
 
         // Dashboard
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavigate = { route ->
-                    navController.navigate(route)
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -897,6 +946,7 @@ fun AppNavigation() {
             CalendarOverrideScreen(
                 uiState = uiState,
                 deleteErrorMessage = deleteUiState.errorMessage,
+                deleteIsDeleting = deleteUiState.isDeleting,
                 onAddOverride = {
                     navController.navigate(Screen.AddCalendarOverride.route)
                 },
@@ -905,9 +955,10 @@ fun AppNavigation() {
                         Screen.EditCalendarOverride.createRoute(date)
                     )
                 },
-                onDeleteOverride = { date ->
+                onDeleteOverride = { date, onSuccess ->
                     deleteViewModel.deleteCalendarOverride(date) {
                         viewModel.refresh()
+                        onSuccess()
                     }
                 },
                 onClearDeleteError = deleteViewModel::clearError,
@@ -980,21 +1031,19 @@ fun AppNavigation() {
 
         // Placeholder: Payroll
         composable(Screen.Payroll.route) {
-            PlaceholderScreen("Payroll")
+            val viewModel: PayrollViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+            PayrollScreen(
+                uiState = uiState,
+                onSelectEmployee = viewModel::selectEmployee,
+                onSelectPayrollPeriod = viewModel::selectPayrollPeriod,
+                onCalculate = viewModel::calculatePayroll,
+                onClearError = viewModel::clearError,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
-}
-
-@Composable
-fun AddCalendarOverrideScreen(
-    uiState: AddCalendarOverrideUiState,
-    onDateChange: (String) -> Unit,
-    onTypeChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onSave: () -> Unit,
-    onBack: () -> Unit
-) {
-    // Isi implementasi Screen
 }
 
 @Composable

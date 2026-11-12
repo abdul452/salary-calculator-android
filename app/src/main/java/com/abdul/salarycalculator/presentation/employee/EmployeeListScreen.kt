@@ -20,13 +20,14 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -39,18 +40,9 @@ fun EmployeeListScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Employee",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Employee",
+                onBack = onBack
             )
         },
         floatingActionButton = {
@@ -201,3 +193,58 @@ private fun EmployeeItem(
         }
     }
 }
+
+
+@Preview(showBackground = true, name = "Employee List - With Data")
+@Composable
+private fun EmployeeListPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        EmployeeListScreen(
+            uiState = EmployeeUiState(
+                employees = listOf(
+                    EmployeeItemUiModel(
+                        id = 1L,
+                        name = "Abdul",
+                        relationship = "Self",
+                        isActive = true
+                    ),
+                    EmployeeItemUiModel(
+                        id = 2L,
+                        name = "Siti Aminah",
+                        relationship = "Spouse",
+                        isActive = true
+                    ),
+                    EmployeeItemUiModel(
+                        id = 3L,
+                        name = "Budi Santoso",
+                        relationship = "Employee",
+                        isActive = false
+                    )
+                ),
+                isLoading = false
+            ),
+            onAddEmployee = {},
+            onEmployeeClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Employee List - Empty")
+@Composable
+private fun EmployeeListEmptyPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        EmployeeListScreen(
+            uiState = EmployeeUiState(
+                employees = emptyList(),
+                isLoading = false
+            ),
+            onAddEmployee = {},
+            onEmployeeClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+

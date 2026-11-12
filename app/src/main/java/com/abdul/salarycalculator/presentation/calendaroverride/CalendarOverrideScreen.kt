@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Delete
@@ -24,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,65 +39,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import androidx.compose.ui.tooling.preview.Preview
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarOverrideScreen(
     uiState: CalendarOverrideUiState,
     deleteErrorMessage: String?,
+    deleteIsDeleting: Boolean,
     onAddOverride: () -> Unit,
     onEditOverride: (String) -> Unit,
-    onDeleteOverride: (String) -> Unit,
+    onDeleteOverride: (String, () -> Unit) -> Unit,
     onClearDeleteError: () -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit
 ) {
-    if (deleteErrorMessage != null) {
-        AlertDialog(
-            onDismissRequest = onClearDeleteError,
-            title = {
-                Text("Gagal Menghapus")
-            },
-            text = {
-                Text(deleteErrorMessage)
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = onClearDeleteError
-                ) {
-                    Text("OK")
-                }
-            }
-        )
-    }
-
     var selectedDateForDelete by remember {
         mutableStateOf<String?>(null)
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Calendar Override")
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
-                        )
-                    }
-                }
+            AppTopBar(
+                title = "Hari Libur",
+                onBack = onBack
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddOverride
+                onClick = onAddOverride,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah Calendar Override"
+                    contentDescription = "Tambah Hari Libur"
                 )
             }
         }
@@ -114,7 +88,13 @@ fun CalendarOverrideScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Text("Memuat data...")
+                    }
                 }
             }
 
@@ -150,10 +130,28 @@ fun CalendarOverrideScreen(
                         .padding(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Belum ada calendar override.",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            text = "Belum ada hari libur",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Text(
+                            text = "Tambahkan hari libur nasional atau perusahaan.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
@@ -166,11 +164,21 @@ fun CalendarOverrideScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
-                        Text(
-                            text = "Daftar Hari Libur",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Daftar Hari Libur",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = "${uiState.calendarOverrides.size} hari libur terdaftar",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
 
                     items(
@@ -192,34 +200,58 @@ fun CalendarOverrideScreen(
         }
     }
 
-    // Delete Confirmation
+    if (deleteErrorMessage != null) {
+        AlertDialog(
+            onDismissRequest = onClearDeleteError,
+            title = {
+                Text("Gagal Menghapus")
+            },
+            text = {
+                Text(deleteErrorMessage)
+            },
+            confirmButton = {
+                TextButton(onClick = onClearDeleteError) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+
     if (selectedDateForDelete != null) {
         AlertDialog(
             onDismissRequest = {
-                selectedDateForDelete = null
+                if (!deleteIsDeleting) {
+                    selectedDateForDelete = null
+                }
             },
             title = {
-                Text("Hapus Calendar Override?")
+                Text("Hapus Hari Libur?")
             },
             text = {
                 Text(
-                    "Data hari libur ini akan dihapus. " +
-                            "Apakah kamu yakin?"
+                    if (deleteIsDeleting) {
+                        "Sedang menghapus data hari libur..."
+                    } else {
+                        "Data hari libur ini akan dihapus. Apakah kamu yakin?"
+                    }
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         val date = selectedDateForDelete
-                        selectedDateForDelete = null
 
-                        if (date != null) {
-                            onDeleteOverride(date)
+                        if (date != null && !deleteIsDeleting) {
+                            onDeleteOverride(date) {
+                                selectedDateForDelete = null
+                            }
                         }
-                    }
+                    },
+                    enabled = !deleteIsDeleting
                 ) {
                     Text(
-                        "Hapus",
+                        if (deleteIsDeleting) "Menghapus..." else "Hapus",
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -228,13 +260,15 @@ fun CalendarOverrideScreen(
                 TextButton(
                     onClick = {
                         selectedDateForDelete = null
-                    }
+                    },
+                    enabled = !deleteIsDeleting
                 ) {
                     Text("Batal")
                 }
             }
         )
     }
+
 }
 
 @Composable
@@ -246,7 +280,7 @@ private fun CalendarOverrideCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Row(
@@ -269,7 +303,7 @@ private fun CalendarOverrideCard(
             ) {
                 Text(
                     text = item.description,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
 
@@ -304,5 +338,105 @@ private fun CalendarOverrideCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Calendar Override List")
+@Composable
+private fun CalendarOverrideListPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        CalendarOverrideScreen(
+            uiState = CalendarOverrideUiState(
+                calendarOverrides = listOf(
+                    CalendarOverrideItemUiModel(
+                        date = "25 Desember 2026",
+                        dateRaw = "2026-12-25",
+                        type = "NATIONAL_HOLIDAY",
+                        description = "Hari Raya Natal"
+                    ),
+                    CalendarOverrideItemUiModel(
+                        date = "1 Januari 2027",
+                        dateRaw = "2027-01-01",
+                        type = "NATIONAL_HOLIDAY",
+                        description = "Tahun Baru"
+                    ),
+                    CalendarOverrideItemUiModel(
+                        date = "15 Januari 2027",
+                        dateRaw = "2027-01-15",
+                        type = "COMPANY_HOLIDAY",
+                        description = "Libur Perusahaan"
+                    )
+                ),
+                isLoading = false
+            ),
+            deleteErrorMessage = null,
+            deleteIsDeleting = false,
+            onAddOverride = {},
+            onEditOverride = {},
+            onDeleteOverride = { _, _ -> },
+            onClearDeleteError = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Calendar Override Empty")
+@Composable
+private fun CalendarOverrideEmptyPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        CalendarOverrideScreen(
+            uiState = CalendarOverrideUiState(
+                calendarOverrides = emptyList(),
+                isLoading = false
+            ),
+            deleteErrorMessage = null,
+            deleteIsDeleting = false,
+            onAddOverride = {},
+            onEditOverride = {},
+            onClearDeleteError = {},
+            onDeleteOverride = { _, _ -> },
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Calendar Override Loading")
+@Composable
+private fun CalendarOverrideLoadingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        CalendarOverrideScreen(
+            uiState = CalendarOverrideUiState(isLoading = true),
+            deleteErrorMessage = null,
+            deleteIsDeleting = false,
+            onAddOverride = {},
+            onEditOverride = {},
+            onDeleteOverride = { _, _ -> },
+            onClearDeleteError = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Calendar Override Error")
+@Composable
+private fun CalendarOverrideErrorPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        CalendarOverrideScreen(
+            uiState = CalendarOverrideUiState(
+                isLoading = false,
+                errorMessage = "Gagal memuat data hari libur."
+            ),
+            deleteErrorMessage = null,
+            deleteIsDeleting = false,
+            onAddOverride = {},
+            onEditOverride = {},
+            onDeleteOverride = { _, _ -> },
+            onClearDeleteError = {},
+            onRetry = {},
+            onBack = {}
+        )
     }
 }

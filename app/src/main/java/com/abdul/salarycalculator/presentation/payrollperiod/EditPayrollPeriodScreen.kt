@@ -9,22 +9,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.presentation.components.DatePickerField
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,20 +40,11 @@ fun EditPayrollPeriodScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Edit Payroll Period",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Edit Payroll Period",
+                onBack = onBack
             )
-        }
+        },
     ) { innerPadding ->
 
         when {
@@ -128,36 +120,18 @@ fun EditPayrollPeriodScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    OutlinedTextField(
+                    DatePickerField(
                         value = uiState.startDate,
-                        onValueChange = onStartDateChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Start Date") },
-                        placeholder = { Text("YYYY-MM-DD") },
-                        supportingText = {
-                            Text("Format YYYY-MM-DD")
-                        },
-                        singleLine = true,
-                        enabled = !uiState.isSaving,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        )
+                        onDateSelected = onStartDateChange,
+                        label = "Start Date",
+                        enabled = !uiState.isSaving
                     )
 
-                    OutlinedTextField(
+                    DatePickerField(
                         value = uiState.endDate,
-                        onValueChange = onEndDateChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("End Date") },
-                        placeholder = { Text("YYYY-MM-DD") },
-                        supportingText = {
-                            Text("Format YYYY-MM-DD")
-                        },
-                        singleLine = true,
-                        enabled = !uiState.isSaving,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        )
+                        onDateSelected = onEndDateChange,
+                        label = "End Date",
+                        enabled = !uiState.isSaving
                     )
 
                     uiState.errorMessage?.let { message ->
@@ -191,3 +165,72 @@ fun EditPayrollPeriodScreen(
         }
     }
 }
+
+
+@Preview(showBackground = true, name = "Edit Payroll Period")
+@Composable
+private fun EditPayrollPeriodScreenPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        EditPayrollPeriodScreen(
+            uiState = EditPayrollPeriodUiState(
+                periodId = 1L,
+                payrollMonth = "2026-11",
+                payrollName = "Gaji November 2026",
+                startDate = "2026-10-26",
+                endDate = "2026-11-25",
+                isLoading = false
+            ),
+            onPayrollNameChange = {},
+            onStartDateChange = {},
+            onEndDateChange = {},
+            onSave = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Edit Payroll Period - Saving")
+@Composable
+private fun EditPayrollPeriodSavingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        EditPayrollPeriodScreen(
+            uiState = EditPayrollPeriodUiState(
+                periodId = 1L,
+                payrollMonth = "2026-11",
+                payrollName = "Gaji November 2026",
+                startDate = "2026-10-26",
+                endDate = "2026-11-25",
+                isLoading = false,
+                isSaving = true
+            ),
+            onPayrollNameChange = {},
+            onStartDateChange = {},
+            onEndDateChange = {},
+            onSave = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Edit Payroll Period - Error")
+@Composable
+private fun EditPayrollPeriodErrorPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        EditPayrollPeriodScreen(
+            uiState = EditPayrollPeriodUiState(
+                periodId = null,
+                isLoading = false,
+                errorMessage = "Gagal memuat data Payroll Period."
+            ),
+            onPayrollNameChange = {},
+            onStartDateChange = {},
+            onEndDateChange = {},
+            onSave = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+

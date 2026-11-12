@@ -19,12 +19,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,18 +39,9 @@ fun PayrollPeriodListScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Payroll Period",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Payroll Period",
+                onBack = onBack
             )
         },
         floatingActionButton = {
@@ -190,3 +183,77 @@ private fun PayrollPeriodItem(
         }
     }
 }
+
+
+@Preview(showBackground = true, name = "Payroll Period - With Data")
+@Composable
+private fun PayrollPeriodListPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        PayrollPeriodListScreen(
+            uiState = PayrollPeriodUiState(
+                payrollPeriods = listOf(
+                    PayrollPeriodItemUiModel(
+                        id = 1L,
+                        payrollMonth = "2026-11",
+                        payrollName = "Gaji November 2026",
+                        startDate = "2026-10-26",
+                        endDate = "2026-11-25"
+                    ),
+                    PayrollPeriodItemUiModel(
+                        id = 2L,
+                        payrollMonth = "2026-10",
+                        payrollName = "Gaji Oktober 2026",
+                        startDate = "2026-09-26",
+                        endDate = "2026-10-25"
+                    ),
+                    PayrollPeriodItemUiModel(
+                        id = 3L,
+                        payrollMonth = "2026-09",
+                        payrollName = "Gaji September 2026",
+                        startDate = "2026-08-26",
+                        endDate = "2026-09-25"
+                    )
+                ),
+                isLoading = false
+            ),
+            onAddPeriod = {},
+            onPeriodClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Payroll Period - Empty")
+@Composable
+private fun PayrollPeriodListEmptyPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        PayrollPeriodListScreen(
+            uiState = PayrollPeriodUiState(
+                payrollPeriods = emptyList(),
+                isLoading = false
+            ),
+            onAddPeriod = {},
+            onPeriodClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Payroll Period - Loading")
+@Composable
+private fun PayrollPeriodListLoadingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        PayrollPeriodListScreen(
+            uiState = PayrollPeriodUiState(
+                isLoading = true
+            ),
+            onAddPeriod = {},
+            onPeriodClick = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+

@@ -19,7 +19,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,18 +60,9 @@ fun AttendanceSelectionScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Attendance",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Attendance",
+                onBack = onBack
             )
         }
     ) { innerPadding ->
@@ -271,3 +264,71 @@ fun AttendanceSelectionScreen(
         }
     }
 }
+
+
+@Preview(showBackground = true, name = "Attendance Selection")
+@Composable
+private fun AttendanceSelectionPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceSelectionScreen(
+            uiState = AttendanceSelectionUiState(
+                employees = listOf(
+                    AttendanceEmployeeOption(
+                        id = 1,
+                        name = "Abdul"
+                    ),
+                    AttendanceEmployeeOption(
+                        id = 2,
+                        name = "Siti Aminah"
+                    ),
+                    AttendanceEmployeeOption(
+                        id = 3,
+                        name = "Budi Santoso"
+                    )
+                ),
+                payrollPeriods = listOf(
+                    AttendancePayrollPeriodOption(
+                        id = 1,
+                        name = "Gaji November 2026",
+                        payrollMonth = "2026-11",
+                        startDate = "2026-10-26",
+                        endDate = "2026-11-25"
+                    ),
+                    AttendancePayrollPeriodOption(
+                        id = 2,
+                        name = "Gaji Oktober 2026",
+                        payrollMonth = "2026-10",
+                        startDate = "2026-09-26",
+                        endDate = "2026-10-25"
+                    )
+                ),
+                selectedEmployeeId = 1,
+                selectedPayrollPeriodId = 1,
+                isLoading = false
+            ),
+            onEmployeeSelected = {},
+            onPayrollPeriodSelected = {},
+            onContinue = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Attendance Loading")
+@Composable
+private fun AttendanceLoadingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        AttendanceSelectionScreen(
+            uiState = AttendanceSelectionUiState(
+                isLoading = true
+            ),
+            onEmployeeSelected = {},
+            onPayrollPeriodSelected = {},
+            onContinue = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+

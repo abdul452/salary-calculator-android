@@ -21,13 +21,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -41,15 +42,9 @@ fun SalaryVersionScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Riwayat Gaji")
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Riwayat Gaji",
+                onBack = onBack
             )
         },
         floatingActionButton = {
@@ -203,3 +198,76 @@ private fun formatRupiah(amount: Long): String {
 private fun formatRate(basisPoints: Int): String {
     return "${basisPoints / 100}.${(basisPoints % 100).toString().padStart(2, '0')}%"
 }
+
+
+@Preview(showBackground = true, name = "Salary Version - With Data")
+@Composable
+private fun SalaryVersionListPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        SalaryVersionScreen(
+            uiState = SalaryVersionUiState(
+                employeeName = "Abdul",
+                salaryVersions = listOf(
+                    SalaryVersionItemUiModel(
+                        id = 1L,
+                        effectiveMonth = "2026-11",
+                        basicSalary = 5000000L,
+                        fixedAllowance = 1000000L,
+                        mealAllowance = 25000L,
+                        punctualityAllowance = 15000L,
+                        jhtRate = 200,
+                        jpRate = 100
+                    ),
+                    SalaryVersionItemUiModel(
+                        id = 2L,
+                        effectiveMonth = "2026-08",
+                        basicSalary = 4500000L,
+                        fixedAllowance = 750000L,
+                        mealAllowance = 20000L,
+                        punctualityAllowance = 10000L,
+                        jhtRate = 200,
+                        jpRate = 100
+                    )
+                ),
+                isLoading = false
+            ),
+            onAddSalaryVersion = {},
+            onBack = {},
+            onRetry = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Salary Version - Empty")
+@Composable
+private fun SalaryVersionEmptyPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        SalaryVersionScreen(
+            uiState = SalaryVersionUiState(
+                employeeName = "Abdul",
+                salaryVersions = emptyList(),
+                isLoading = false
+            ),
+            onAddSalaryVersion = {},
+            onBack = {},
+            onRetry = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Salary Version - Loading")
+@Composable
+private fun SalaryVersionLoadingPreview() {
+    SalaryCalculatorTheme(dynamicColor = false) {
+        SalaryVersionScreen(
+            uiState = SalaryVersionUiState(
+                employeeName = "Abdul",
+                isLoading = true
+            ),
+            onAddSalaryVersion = {},
+            onBack = {},
+            onRetry = {}
+        )
+    }
+}
+
