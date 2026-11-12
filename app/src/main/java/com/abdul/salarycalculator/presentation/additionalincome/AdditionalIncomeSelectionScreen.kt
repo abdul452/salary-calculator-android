@@ -27,7 +27,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.presentation.components.AppTopBar
+import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,15 +55,9 @@ fun AdditionalIncomeSelectionScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Additional Income")
-                },
-                navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Kembali")
-                    }
-                }
+            AppTopBar(
+                title = "Additional Income",
+                onBack = onBack
             )
         }
     ) { innerPadding ->
@@ -240,5 +237,42 @@ fun AdditionalIncomeSelectionScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AdditionalIncomeSelectionScreenPreview() {
+    SalaryCalculatorTheme {
+        AdditionalIncomeSelectionScreen(
+            uiState = AdditionalIncomeSelectionUiState(
+                employees = listOf(
+                    AdditionalIncomeEmployeeOption(
+                        id = 1L,
+                        name = "Abdul"
+                    ),
+                    AdditionalIncomeEmployeeOption(
+                        id = 2L,
+                        name = "Karyawan 2"
+                    )
+                ),
+                payrollPeriods = listOf(
+                    AdditionalIncomePeriodOption(
+                        id = 1L,
+                        name = "November 2026",
+                        startDate = "01-11-2026",
+                        endDate = "30-11-2026"
+                    )
+                ),
+                selectedEmployeeId = 1L,
+                selectedPayrollPeriodId = 1L,
+                isLoading = false
+            ),
+            onEmployeeSelected = {},
+            onPayrollPeriodSelected = {},
+            onContinue = {},
+            onRetry = {},
+            onBack = {}
+        )
     }
 }

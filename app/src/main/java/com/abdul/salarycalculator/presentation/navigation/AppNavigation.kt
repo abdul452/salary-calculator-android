@@ -76,42 +76,34 @@ fun AppNavigation() {
         navController = navController,
         startDestination = Screen.Dashboard.route,
 
-        // Saat membuka halaman baru
+        // Masuk halaman: kanan ke kiri
         enterTransition = {
             slideInHorizontally(
-                initialOffsetX = { it / 4 },
-                animationSpec = tween(250)
-            ) + fadeIn(
-                animationSpec = tween(250)
-            )
-        },
-
-        // Saat meninggalkan halaman
-        exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { -it / 4 },
-                animationSpec = tween(250)
-            ) + fadeOut(
+                initialOffsetX = { it },
                 animationSpec = tween(200)
             )
         },
 
-        // Saat kembali ke halaman sebelumnya
-        popEnterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { -it / 4 },
-                animationSpec = tween(250)
-            ) + fadeIn(
-                animationSpec = tween(250)
+        // Keluar halaman: ke kiri
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it },
+                animationSpec = tween(200)
             )
         },
 
-        // Saat halaman sekarang ditutup dengan Back
+        // Kembali: halaman sebelumnya masuk dari kiri
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = tween(200)
+            )
+        },
+
+        // Halaman sekarang keluar ke kanan
         popExitTransition = {
             slideOutHorizontally(
-                targetOffsetX = { it / 4 },
-                animationSpec = tween(250)
-            ) + fadeOut(
+                targetOffsetX = { it },
                 animationSpec = tween(200)
             )
         }
