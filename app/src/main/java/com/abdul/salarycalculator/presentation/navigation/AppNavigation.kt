@@ -2,8 +2,7 @@
 package com.abdul.salarycalculator.presentation.navigation
 
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,6 +42,7 @@ import com.abdul.salarycalculator.presentation.calendaroverride.CalendarOverride
 import com.abdul.salarycalculator.presentation.calendaroverride.DeleteCalendarOverrideViewModel
 import com.abdul.salarycalculator.presentation.calendaroverride.EditCalendarOverrideScreen
 import com.abdul.salarycalculator.presentation.calendaroverride.EditCalendarOverrideViewModel
+import com.abdul.salarycalculator.domain.model.ThemeMode
 import com.abdul.salarycalculator.presentation.dashboard.DashboardScreen
 import com.abdul.salarycalculator.presentation.employee.AddEmployeeScreen
 import com.abdul.salarycalculator.presentation.employee.AddEmployeeViewModel
@@ -67,9 +66,13 @@ import com.abdul.salarycalculator.presentation.salaryversion.AddSalaryVersionVie
 import com.abdul.salarycalculator.presentation.salaryversion.SalaryVersionScreen
 import com.abdul.salarycalculator.presentation.salaryversion.SalaryVersionViewModel
 import java.time.LocalDate
+import java.time.YearMonth
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    themeMode: ThemeMode,
+    onThemeModeSelected: (ThemeMode) -> Unit
+) {
     val navController = rememberNavController()
 
     NavHost(
@@ -116,7 +119,9 @@ fun AppNavigation() {
                     navController.navigate(route) {
                         launchSingleTop = true
                     }
-                }
+                },
+                themeMode = themeMode,
+                onThemeModeSelected = onThemeModeSelected
             )
         }
 
@@ -460,11 +465,20 @@ fun AppNavigation() {
                 onEmployeeSelected = viewModel::onEmployeeSelected,
                 onPayrollPeriodSelected = viewModel::onPayrollPeriodSelected,
                 onContinue = {
-                    viewModel.openAttendance { employeeId, employeeName, startDate, endDate ->
+                    viewModel.openAttendance {
+                            employeeId,
+                            employeeName,
+                            payrollPeriodId,
+                            payrollMonth,
+                            startDate,
+                            endDate ->
+
                         navController.navigate(
                             Screen.Attendance.createRoute(
                                 employeeId = employeeId,
                                 employeeName = employeeName,
+                                payrollPeriodId = payrollPeriodId,
+                                payrollMonth = payrollMonth,
                                 startDate = startDate,
                                 endDate = endDate
                             )
@@ -488,6 +502,12 @@ fun AppNavigation() {
                     type = NavType.LongType
                 },
                 navArgument("employeeName") {
+                    type = NavType.StringType
+                },
+                navArgument("payrollPeriodId") {
+                    type = NavType.LongType
+                },
+                navArgument("payrollMonth") {
                     type = NavType.StringType
                 },
                 navArgument("startDate") {
@@ -515,16 +535,32 @@ fun AppNavigation() {
                 backStackEntry.arguments?.getString("endDate")
             )
 
+            val payrollPeriodId = requireNotNull(
+                backStackEntry.arguments?.getLong("payrollPeriodId")
+            )
+
+            val payrollMonth = requireNotNull(
+                backStackEntry.arguments?.getString("payrollMonth")
+            )
+
             val startDate = LocalDate.parse(startDateString)
             val endDate = LocalDate.parse(endDateString)
 
             val viewModel: AttendanceViewModel = hiltViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            LaunchedEffect(employeeId, startDate, endDate) {
+            LaunchedEffect(
+                employeeId,
+                payrollPeriodId,
+                payrollMonth,
+                startDate,
+                endDate
+            ) {
                 viewModel.loadAttendance(
                     employeeId = employeeId,
                     employeeName = employeeName,
+                    payrollPeriodId = payrollPeriodId,
+                    payrollMonth = YearMonth.parse(payrollMonth),
                     startDate = startDate,
                     endDate = endDate
                 )
@@ -537,16 +573,20 @@ fun AppNavigation() {
                         Screen.AddAttendance.createRoute(employeeId)
                     )
                 },
-                onAttendanceClick = { attendanceId ->
-                    val attendance = uiState.attendanceRecords
-                        .firstOrNull { it.id == attendanceId }
-
-                    if (attendance != null) {
+                onAttendanceClick = { day ->
+                    if (day.attendanceId == null) {
+                        navController.navigate(
+                            Screen.AddAttendance.createRoute(
+                                employeeId = employeeId,
+                                initialDate = day.dateRaw
+                            )
+                        )
+                    } else {
                         navController.navigate(
                             Screen.AttendanceDetail.createRoute(
                                 employeeId = employeeId,
                                 employeeName = employeeName,
-                                attendanceDate = attendance.attendanceDateRaw
+                                attendanceDate = day.dateRaw
                             )
                         )
                     }
@@ -555,6 +595,8 @@ fun AppNavigation() {
                     viewModel.loadAttendance(
                         employeeId = employeeId,
                         employeeName = employeeName,
+                        payrollPeriodId = payrollPeriodId,
+                        payrollMonth = YearMonth.parse(payrollMonth),
                         startDate = startDate,
                         endDate = endDate
                     )
@@ -571,6 +613,11 @@ fun AppNavigation() {
             arguments = listOf(
                 navArgument("employeeId") {
                     type = NavType.LongType
+                },
+                navArgument("initialDate") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
                 }
             )
         ) { backStackEntry ->
@@ -578,9 +625,16 @@ fun AppNavigation() {
             val employeeId = requireNotNull(
                 backStackEntry.arguments?.getLong("employeeId")
             )
+            val initialDate = backStackEntry.arguments?.getString("initialDate")
 
             val viewModel: AddAttendanceViewModel = hiltViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(initialDate) {
+                initialDate
+                    ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                    ?.let { viewModel.onAttendanceDateChange(it.toString()) }
+            }
 
             AddAttendanceScreen(
                 uiState = uiState,

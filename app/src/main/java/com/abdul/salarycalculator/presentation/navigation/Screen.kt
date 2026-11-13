@@ -57,15 +57,17 @@ sealed class Screen(val route: String) {
 
     // Attendance
     data object Attendance :
-        Screen("attendance/{employeeId}/{employeeName}/{startDate}/{endDate}") {
+        Screen("attendance/{employeeId}/{employeeName}/{payrollPeriodId}/{payrollMonth}/{startDate}/{endDate}") {
 
         fun createRoute(
             employeeId: Long,
             employeeName: String,
+            payrollPeriodId: Long,
+            payrollMonth: String,
             startDate: String,
             endDate: String
         ): String {
-            return "attendance/$employeeId/${Uri.encode(employeeName)}/$startDate/$endDate"
+            return "attendance/$employeeId/${Uri.encode(employeeName)}/$payrollPeriodId/$payrollMonth/$startDate/$endDate"
         }
     }
 
@@ -84,10 +86,14 @@ sealed class Screen(val route: String) {
     data object AttendanceSelection : Screen("attendance_selection")
 
     data object AddAttendance :
-        Screen("add_attendance/{employeeId}") {
+        Screen("add_attendance/{employeeId}?initialDate={initialDate}") {
 
         fun createRoute(employeeId: Long): String {
             return "add_attendance/$employeeId"
+        }
+
+        fun createRoute(employeeId: Long, initialDate: String): String {
+            return "add_attendance/$employeeId?initialDate=$initialDate"
         }
     }
 

@@ -125,6 +125,8 @@ class AttendanceSelectionViewModel @Inject constructor(
         onSuccess: (
             employeeId: Long,
             employeeName: String,
+            payrollPeriodId: Long,
+            payrollMonth: String,
             startDate: String,
             endDate: String
         ) -> Unit
@@ -149,6 +151,8 @@ class AttendanceSelectionViewModel @Inject constructor(
         onSuccess(
             employee.id,
             employee.name,
+            period.id,
+            period.payrollMonth,
             period.startDate,
             period.endDate
         )

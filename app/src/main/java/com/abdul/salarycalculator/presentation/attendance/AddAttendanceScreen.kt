@@ -103,32 +103,6 @@ fun AddAttendanceScreen(
             Column {
                 Spacer(modifier = Modifier.height(4.dp))
 
-                OutlinedTextField(
-                    value = uiState.attendanceType,
-                    onValueChange = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(enabled = !uiState.isSaving) {
-                            expanded = true
-                        },
-                    readOnly = true,
-                    label = {
-                        Text("Jenis Kehadiran")
-                    },
-                    trailingIcon = {
-                        Text(
-                            text = "▼",
-                            modifier = Modifier.clickable(
-                                enabled = !uiState.isSaving
-                            ) {
-                                expanded = true
-                            }
-                        )
-                    },
-                    enabled = !uiState.isSaving
-                )
-
-
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {

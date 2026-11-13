@@ -12,6 +12,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -24,11 +33,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.abdul.salarycalculator.domain.model.ThemeMode
 import com.abdul.salarycalculator.presentation.navigation.Screen
 import com.abdul.salarycalculator.ui.theme.SalaryCalculatorTheme
 
@@ -95,8 +109,11 @@ private val dashboardMenus = listOf(
 @Composable
 fun DashboardScreen(
     onNavigate: (String) -> Unit,
-    payrollSummary: DashboardPayrollSummary? = null
+    payrollSummary: DashboardPayrollSummary? = null,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeModeSelected: (ThemeMode) -> Unit = {}
 ) {
+    var themeMenuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -106,6 +123,45 @@ fun DashboardScreen(
                         text = "Salary Calculator",
                         fontWeight = FontWeight.Bold
                     )
+                },
+                actions = {
+                    androidx.compose.foundation.layout.Box {
+                        IconButton(onClick = { themeMenuExpanded = true }) {
+                            Icon(
+                                imageVector = themeModeIcon(themeMode),
+                                contentDescription = "Pilih tema"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = themeMenuExpanded,
+                            onDismissRequest = { themeMenuExpanded = false }
+                        ) {
+                            ThemeMode.entries.forEach { mode ->
+                                DropdownMenuItem(
+                                    text = { Text(mode.displayName) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = themeModeIcon(mode),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        if (mode == themeMode) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Check,
+                                                contentDescription = "Tema aktif",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        onThemeModeSelected(mode)
+                                        themeMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             )
         }
@@ -326,12 +382,36 @@ private fun DashboardMenuCard(
     }
 }
 
-@Preview(showBackground = true, name = "Dashboard - With Payroll Data")
+private fun themeModeIcon(themeMode: ThemeMode) = when (themeMode) {
+    ThemeMode.SYSTEM -> Icons.Filled.Smartphone
+    ThemeMode.LIGHT -> Icons.Filled.LightMode
+    ThemeMode.DARK -> Icons.Filled.DarkMode
+}
+
+@Preview(showBackground = true, name = "Dashboard - Light Theme")
 @Composable
 private fun DashboardScreenPreview() {
-    SalaryCalculatorTheme(dynamicColor = false) {
+    SalaryCalculatorTheme(themeMode = ThemeMode.LIGHT) {
         DashboardScreen(
             onNavigate = {},
+            themeMode = ThemeMode.LIGHT,
+            payrollSummary = DashboardPayrollSummary(
+                payrollPeriod = "November 2026",
+                employeeCount = 2,
+                totalTakeHomePay = "Rp 12.500.000",
+                status = "Contoh data Preview"
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Dashboard - Dark Theme")
+@Composable
+private fun DashboardDarkThemePreview() {
+    SalaryCalculatorTheme(themeMode = ThemeMode.DARK) {
+        DashboardScreen(
+            onNavigate = {},
+            themeMode = ThemeMode.DARK,
             payrollSummary = DashboardPayrollSummary(
                 payrollPeriod = "November 2026",
                 employeeCount = 2,
